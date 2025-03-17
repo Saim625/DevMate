@@ -15,7 +15,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
   }
 });
 
-profileRouter.post("/profile/edit", userAuth, async (req, res) => {
+profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
     if (!validateProfileEdit(req)) {
       throw new Error(
@@ -23,11 +23,14 @@ profileRouter.post("/profile/edit", userAuth, async (req, res) => {
       );
     }
     const loggedInUser = req.user;
-    const updatedFields = Object.keys(req.body).forEach(
+    Object.keys(req.body).forEach(
       (field) => (loggedInUser[field] = req.body[field])
     );
     await loggedInUser.save();
-    res.send(loggedInUser.firstName + " your profile has been updated");
+    res.json({
+      message: `${loggedInUser.firstName}, your profile updated successfuly`,
+      data: loggedInUser,
+    });
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
   }
@@ -39,7 +42,7 @@ profileRouter.patch("/profile/update-password", userAuth, async (req, res) => {
     const user = req.user;
     const comparePassword = await bcrypt.compare(oldPassword, user.password);
     if (!comparePassword) {
-      return res.status(400).json({message: "Invalid old password"})
+      return res.status(400).json({ message: "Invalid old password" });
     }
 
     if (!validator.isStrongPassword(newPassword)) {
@@ -51,7 +54,7 @@ profileRouter.patch("/profile/update-password", userAuth, async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
-    return res.json({message: "Password updated succeefully"})
+    return res.json({ message: "Password updated succeefully" });
   } catch (err) {
     return res.status(400).send("ERROR: " + err.message);
   }

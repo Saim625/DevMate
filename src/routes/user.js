@@ -5,7 +5,7 @@ const user = require("../models/user");
 
 const userRouter = express.Router();
 
-const USER_SAFE_DATA = "firstName lastName age gender skills about";
+const USER_SAFE_DATA = "firstName lastName age gender skills about imageURL";
 
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
@@ -39,15 +39,31 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       .populate("toUserId", USER_SAFE_DATA);
 
     const data = connections.map((row) => {
-      if (row.fromUserId._id === loggedInUser._id) {
-        return row.toUserId;
-      }
-      return row.fromUserId;
-    });
+      const user =
+        row.fromUserId._id.toString() === loggedInUser._id.toString()
+          ? row.toUserId.toObject()
+          : row.fromUserId.toObject();
 
+      return {
+        connectionId: row._id,
+        ...user,
+      };
+    });
     res.json({ data });
   } catch (err) {
     res.status(400).json({ message: "ERROR: " + err.message });
+  }
+});
+
+userRouter.delete("/user/connection/remove/:id", userAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await connectionRequest.findByIdAndDelete(id);
+    res.status(200).json({ success: true, message: "Connection removed" });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error removing connection" });
   }
 });
 
@@ -79,7 +95,9 @@ userRouter.get("/feed", userAuth, async (req, res) => {
           { _id: { $ne: loggedInUser._id } },
         ],
       })
-      .select(USER_SAFE_DATA).skip(skip).limit(limit);
+      .select(USER_SAFE_DATA)
+      .skip(skip)
+      .limit(limit);
 
     res.send(users);
   } catch (err) {
