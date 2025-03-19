@@ -62,28 +62,38 @@ requestRouter.post(
       const status = req.params.status;
 
       const allowedStatus = ["accepted", "rejected"];
+      
+      // Validate the status
       if (!allowedStatus.includes(status)) {
         return res.status(400).json({ message: "Status not valid" });
       }
 
+      // Find the connection request
       const connectionRequest = await ConnectionRequest.findOne({
         _id: requestId,
         toUserId: loggedInUser._id,
-        status: "interested",
+        status: "interested", // Ensure the request is in the "interested" state
       });
+
       if (!connectionRequest) {
         return res
           .status(404)
           .json({ message: "Connection request not found" });
       }
 
-      connectionRequest.status = "accepted";
+      // Update the status dynamically based on the request parameter
+      connectionRequest.status = status;  // Set to either "accepted" or "rejected"
+      
+      // Save the updated connection request
       const data = await connectionRequest.save();
-      res.json({ message: "Connection request " + status, data });
+
+      // Send a response indicating the action taken
+      res.json({ message: `Connection request ${status}`, data });
     } catch (err) {
       res.status(400).send("Something went wrong " + err.message);
     }
   }
 );
+
 
 module.exports = requestRouter;
