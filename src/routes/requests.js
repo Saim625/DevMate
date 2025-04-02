@@ -4,6 +4,7 @@ const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 const { default: mongoose } = require("mongoose");
 const requestRouter = express.Router();
+const sendEmail = require("../utils/sendEmail");
 
 requestRouter.post(
   "/request/send/:status/:toUserId",
@@ -42,6 +43,8 @@ requestRouter.post(
         status,
       });
       const data = await connectionRequest.save();
+      const emailRes = await sendEmail.run("Request Send");
+      console.log(emailRes);
       res.json({
         message: "Connection request sent successfully",
         data,
@@ -62,7 +65,7 @@ requestRouter.post(
       const status = req.params.status;
 
       const allowedStatus = ["accepted", "rejected"];
-      
+
       // Validate the status
       if (!allowedStatus.includes(status)) {
         return res.status(400).json({ message: "Status not valid" });
@@ -82,8 +85,8 @@ requestRouter.post(
       }
 
       // Update the status dynamically based on the request parameter
-      connectionRequest.status = status;  // Set to either "accepted" or "rejected"
-      
+      connectionRequest.status = status; // Set to either "accepted" or "rejected"
+
       // Save the updated connection request
       const data = await connectionRequest.save();
 
@@ -94,6 +97,5 @@ requestRouter.post(
     }
   }
 );
-
 
 module.exports = requestRouter;
