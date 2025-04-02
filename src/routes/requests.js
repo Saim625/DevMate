@@ -43,8 +43,13 @@ requestRouter.post(
         status,
       });
       const data = await connectionRequest.save();
-      const emailRes = await sendEmail.run("Request Send");
-      console.log(emailRes);
+      //  const recipientEmail = req.toUserId.emailId; The recipient of the friend request
+
+      const subject = "A new friend request from " + req.user.firstName; // Subject
+      const body = `Hi, you have a new friend request from ${req.user.firstName}.`; // Body
+
+      // Send the email
+      const emailRes = await sendEmail.run(subject, body);
       res.json({
         message: "Connection request sent successfully",
         data,
