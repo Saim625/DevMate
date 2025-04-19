@@ -30,7 +30,7 @@ app.use("/", profileRouter)
 app.use("/", requestRouter)
 app.use("/", userRouter)
 app.use("/", chatRouter)
-app.use("/", paymentRouter)
+app.use("/api", paymentRouter)
 
 const server = http.createServer(app)
 
