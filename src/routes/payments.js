@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const { default: axios } = require("axios");
 
 paymentRouter.post("/create-payment", userAuth, async (req, res) => {
+  console.log("Hit /create-payment route");
   try {
     const { plan } = req.body;
     const selectedPlan = plans[plan.toLowerCase()];
