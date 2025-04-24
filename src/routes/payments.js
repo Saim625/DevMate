@@ -81,17 +81,18 @@ paymentRouter.post(
   }
 );
 
-// Step 5: Optional - Get Order Status API
-// router.get("/order/:orderId", async (req, res) => {
-//     try {
-//       const order = await Order.findOne({ orderId: req.params.orderId });
-//       if (!order) return res.status(404).json({ message: "Order not found" });
-//       res.json({ status: order.status });
-//     } catch (err) {
-//       res.status(500).json({ message: "Error fetching order status" });
-//     }
-//   });
+paymentRouter.get("/premium/verify", userAuth, async (req,res)=>{
+  try{
+    const user_id = req.user._id
+    const isPremium = await order.findOne({userId: user_id, status: "paid"})
+    if(!isPremium){
+      return res.status(400).json({message: "User is not premium"})
+    }
+    res.status(200).json({message: "User is premium"})
 
-//   module.exports = router;
+  }catch(err){
+    res.status(500).send("ERROR: " + err.message);
+  }
+})
 
 module.exports = paymentRouter;
